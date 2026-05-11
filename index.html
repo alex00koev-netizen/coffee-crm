@@ -631,6 +631,14 @@ async function startApp() {
   }
 }
 
+function setStatus(msg, err) {
+  const el = document.getElementById('load-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = err ? 'var(--danger)' : 'var(--green)';
+  el.style.display = 'block';
+}
+
 async function fetchAllData() {
   try {
     // ── Справочник Клиенты ───────────────────────────────────────────────
