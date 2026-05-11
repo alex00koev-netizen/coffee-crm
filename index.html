@@ -871,10 +871,13 @@ function onMachineChange() {
   const machines = equipmentData[name] || [];
   const m = machId ? machines.find(x => x.id === machId) : machines.find(x => String(x.status||'').toLowerCase() === 'активна');
   document.getElementById('cc-equip').textContent = m ? `${m.id} — ${m.model}` : '—';
-  // Сервис аппарата (если есть)
+  // Сервис: приоритет — сервис аппарата, если нет — сервис клиента
+  const svcEl  = document.getElementById('cc-service');
   const svcRow = document.getElementById('cc-service-row');
-  if (m && m.service) { document.getElementById('cc-service').textContent = m.service; svcRow.style.display='flex'; }
-  else { document.getElementById('cc-service').textContent = '—'; svcRow.style.display='flex'; }
+  const cl2 = clientsData.find(c => c.name === name);
+  const svcText = (m && m.service) ? m.service : (cl2 && cl2.service ? cl2.service : '—');
+  if (svcEl) svcEl.textContent = svcText;
+  if (svcRow) svcRow.style.display = 'flex';
 
   // Нормативы с расходом — только у которых есть объём стакана
   // Показываем ВСЕ напитки у которых есть размер стакана
@@ -981,8 +984,22 @@ async function submitVisit() {
     }
 
     showToast('✓ Визит сохранён!');
+    // Запоминаем выбранного клиента и машину
+    const savedClient  = document.getElementById('visit-client').value;
+    const savedMachine = document.getElementById('visit-machine').value;
     resetForm();
     await fetchAllData();
+    // Восстанавливаем клиента и машину после перезагрузки
+    if (savedClient) {
+      document.getElementById('visit-client').value = savedClient;
+      onClientChange();
+      // Восстановить аппарат
+      setTimeout(() => {
+        const machSel = document.getElementById('visit-machine');
+        if (machSel && savedMachine) machSel.value = savedMachine;
+        onMachineChange();
+      }, 100);
+    }
   } catch(e) {
     showToast('Ошибка: ' + e.message, true);
   } finally {
@@ -997,8 +1014,9 @@ function resetForm() {
     const el = document.getElementById(id); if(el) el.value='';
   });
   setDefaultDate();
+  // Сбрасываем только значения счётчиков, не сам список напитков
   document.querySelectorAll('[id^="drink-"]').forEach(inp => inp.value=0);
-  window._filteredDrinks=[];
+  // НЕ очищаем _filteredDrinks — список напитков остаётся для следующего визита
 }
 function setDefaultDate() {
   const n=new Date(); const p=x=>String(x).padStart(2,'0');
