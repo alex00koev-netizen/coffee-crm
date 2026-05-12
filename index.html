@@ -552,7 +552,7 @@ function saveConfig() {
     return;
   }
   errEl.style.display = 'none';
-  CFG = { name, scriptUrl: url };
+  CFG = { name, scriptUrl: url, version: APP_VERSION };
   localStorage.setItem('crm_cfg', JSON.stringify(CFG));
   const saved = document.getElementById('cfg-saved');
   saved.textContent = '✓ Сохранено, загружаем...';
@@ -661,6 +661,9 @@ async function fetchAllData() {
         && String(r[10]||'').toLowerCase() === 'да'
         && String(r[12]||'').trim() === CFG.name
       )
+      // Лог для проверки
+      ; console.log('Загружено клиентов для', CFG.name + ':', clientsData.length);
+      clientsData = clientsData
       .map(r => ({
         name:         String(r[0]  || ''),
         type:         String(r[2]  || ''),
