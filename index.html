@@ -661,9 +661,6 @@ async function fetchAllData() {
         && String(r[10]||'').toLowerCase() === 'да'
         && String(r[12]||'').trim() === CFG.name
       )
-      // Лог для проверки
-      ; console.log('Загружено клиентов для', CFG.name + ':', clientsData.length);
-      clientsData = clientsData
       .map(r => ({
         name:         String(r[0]  || ''),
         type:         String(r[2]  || ''),
