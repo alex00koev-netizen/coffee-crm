@@ -972,7 +972,8 @@ async function submitVisit() {
     const cRows = [];
     drinks.forEach((d,i) => {
       const val = parseInt(document.getElementById('drink-'+i)?.value||0);
-      if (val > 0) cRows.push([client, serial, ds, d.name.trim(), val]);
+      // Счётчики: A=НазвТТ, B=Серийный, C=Дата, D=Напиток, E=Тип(формула), F=Счётчик
+      if (val > 0) cRows.push([client, serial, ds, d.name.trim(), '', val]);
     });
     if (cRows.length) await scriptPost({ action:'addCounters', rows:cRows });
 
@@ -1123,7 +1124,8 @@ async function loadDash() {
         fmtDate(r[2]) === d &&
         (!selMach || !r[1] || String(r[1]).trim() === selMach)
       );
-      return row != null ? (parseFloat(row[4])||0) : null;
+      // col5 = Счётчик (после вставки Тип в col4)
+      return row != null ? (parseFloat(row[5])||0) : null;
     }
 
     function getGenCounter(type, date) {
