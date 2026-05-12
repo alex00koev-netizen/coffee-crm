@@ -153,6 +153,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <option>Житнюк</option>
         <option>Бойко</option>
         <option>Яковлев</option>
+        <option>Добрев</option>
       </select>
     </div>
     <div class="config-field">
@@ -586,10 +587,12 @@ function fmtDate(val) {
 }
 
 // ══ API ════════════════════════════════════════════════════════════════════
-async function scriptGet(sheet) {
+async function scriptGet(sheet, months) {
+  let url = CFG.scriptUrl + '?sheet=' + encodeURIComponent(sheet);
+  if (months) url += '&months=' + months;
   let r;
   try {
-    r = await fetch(CFG.scriptUrl + '?sheet=' + encodeURIComponent(sheet));
+    r = await fetch(url);
   } catch(netErr) {
     throw new Error('Нет соединения с Apps Script. Проверь URL скрипта и переопубликуй.');
   }
@@ -604,8 +607,8 @@ async function scriptGet(sheet) {
 }
 
 // Безопасный GET — при ошибке возвращает [] и не прерывает загрузку
-async function safeGet(sheet) {
-  try { return await scriptGet(sheet); }
+async function safeGet(sheet, months) {
+  try { return await scriptGet(sheet, months); }
   catch(e) { console.warn('safeGet:', sheet, e.message); return []; }
 }
 async function scriptPost(payload) {
@@ -727,7 +730,7 @@ async function fetchAllData() {
     // 0=НазвТТ, 1=Дата, 2=ТП, 3=ОстКоф, 4=ОстМол, 5=ОстВис,
     // 6=ОстШок, 7=ОстМор, 8=ЗаяКоф, 9=ЗаяМол, 10=ЗаяВис,
     // 11=ЗаяШок, 12=ЗаяМор, ..., 23=Примечание
-    setStatus('Загружаем визиты...'); const visRaw = await scriptGet('Визиты');
+    setStatus('Загружаем визиты...'); const visRaw = await scriptGet('Визиты', 6);
     visitsData = visRaw.slice(3).filter(r => r[0]).map(r => {
       const rr = [...r];
       rr[1] = fmtDate(rr[1]);  // Дата col1
@@ -777,7 +780,7 @@ async function fetchAllData() {
 
     // ── Общие счётчики ───────────────────────────────────────────────────
     // 0=НазвТТ, 1=Серийный№, 2=Дата, 3=Инж.счётчик, 4=Общий счётчик
-    setStatus('Загружаем общие счётчики...'); const gcRaw = await safeGet('Общие счётчики');
+    setStatus('Загружаем общие счётчики...'); const gcRaw = await safeGet('Общие счётчики', 6);
     window._allGenCounters = gcRaw.slice(1).filter(r => r[0] && r[2]).map(r => {
       const rr = [...r]; rr[2] = fmtDate(rr[2]); return rr;
     });
